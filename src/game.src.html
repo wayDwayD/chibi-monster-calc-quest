@@ -36,7 +36,7 @@ input{-webkit-user-select:text;user-select:text;font-family:inherit;font-size:34
 .home .logo{position:absolute;left:0;right:0;top:34px}
 .home .logo .a{font-size:92px;line-height:1.05}
 .home .logo .b{font-size:60px;margin-top:2px;-webkit-text-stroke-color:#b34b00}
-.home .main{position:absolute;left:50%;top:360px;transform:translateX(-50%);width:520px;height:140px;font-size:64px}
+.home .main{position:absolute;left:calc(50% - 260px);top:360px;width:520px;height:140px;font-size:64px}
 .home .sub{position:absolute;top:540px;width:250px;height:112px;font-size:42px}
 .home .mascot{position:absolute;width:200px;bottom:14px;animation:bob 2.4s ease-in-out infinite}
 @keyframes bob{50%{transform:translateY(-14px)}}
@@ -64,7 +64,7 @@ input{-webkit-user-select:text;user-select:text;font-family:inherit;font-size:34
 .scell.lock .lk{position:absolute;width:44%;opacity:.9}
 .scell.clr::after{content:"";position:absolute;right:2px;bottom:2px;width:32px;height:32px;background:var(--star) center/contain no-repeat}
 .scell.ura{background:rgba(70,40,110,.85);border-color:#b58cff}.scell.ura .n{color:#ffd6ff}
-.go{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);width:560px;height:118px;font-size:56px}
+.go{position:absolute;left:calc(50% - 280px);bottom:22px;width:560px;height:118px;font-size:56px}
 .info{position:absolute;left:30px;bottom:30px;width:320px;font-size:22px;font-weight:700;line-height:1.35;padding:10px 16px;border-radius:20px;background:rgba(255,255,255,.8)}
 /* battle */
 .world{position:absolute;top:0;right:0;bottom:0;left:0}
@@ -155,7 +155,7 @@ input{-webkit-user-select:text;user-select:text;font-family:inherit;font-size:34
 /* gacha */
 .gc .mach{position:absolute;left:50%;top:150px;transform:translateX(-50%);width:340px;height:340px}
 .gc .mach img{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);max-width:100%}
-.gc .cost{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);width:560px;height:116px;font-size:48px}
+.gc .cost{position:absolute;left:calc(50% - 280px);bottom:26px;width:560px;height:116px;font-size:48px}
 .shk{animation:shk .35s linear infinite}
 @keyframes shk{20%{transform:translate(-50%,-50%) rotate(-9deg)}50%{transform:translate(-50%,-50%) rotate(9deg)}80%{transform:translate(-50%,-50%) rotate(-6deg)}}
 .gres{display:flex;flex-direction:column;align-items:center;gap:8px}
@@ -175,7 +175,7 @@ input{-webkit-user-select:text;user-select:text;font-family:inherit;font-size:34
 @media (prefers-reduced-motion:reduce){.bob,.mascot,.aura.on,.shk{animation:none!important}}
 </style>
 <div id="wrap"><div id="stage"><div id="screen"></div><div id="ov"></div>
-<div class="load" id="load"><div class="ttl" style="font-size:72px;-webkit-text-stroke-width:12px">ちびモンスター</div><div class="ttl" style="font-size:44px;-webkit-text-stroke-color:#b34b00">けいさんクエスト</div><div class="lb"><i id="lbi"></i></div><button class="btn green" id="startbtn" style="width:460px;height:110px;font-size:52px;display:none">タップして はじめる</button><div id="lmsg" style="font-size:26px;font-weight:700">じゅんびちゅう…</div></div>
+<div class="load" id="load"><div class="ttl" style="font-size:72px;-webkit-text-stroke-width:12px">ちびモンスター</div><div class="ttl" style="font-size:44px;-webkit-text-stroke-color:#b34b00">けいさんクエスト</div><div class="lb"><i id="lbi"></i></div><button class="btn green" id="startbtn" style="width:620px;height:110px;font-size:50px;white-space:nowrap;display:none">タップして はじめる</button><div id="lmsg" style="font-size:26px;font-weight:700">じゅんびちゅう…</div></div>
 </div></div>
 <script>
 "use strict";
