@@ -4,7 +4,7 @@
 <style>
 /* Layout: 1280x720 のステージを画面に合わせて拡大縮小。キャラは中央下、問題カードは上、答えボタンは下。 */
 :root{--ink:#3a2866;--paper:#fffaf0;--green:#35b24a;--orange:#f28a1c;--blue:#2f86e0;--yellow:#ffd23f;--pink:#ff6f9f;--night:#2b1d4f;color-scheme:light}
-html,body{height:100%;margin:0;background:var(--night);overflow:hidden;font-family:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Hiragino Sans","Yu Gothic",sans-serif;color:var(--ink);-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;overscroll-behavior:none}
+html,body{position:fixed;left:0;top:0;width:100%;height:100%;margin:0;background:var(--night);overflow:hidden;font-family:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Hiragino Sans","Yu Gothic",sans-serif;color:var(--ink);-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;overscroll-behavior:none}
 #wrap{position:absolute;top:0;right:0;bottom:0;left:0;overflow:hidden;background:var(--night)}
 #stage{position:absolute;left:0;top:0;width:1280px;height:720px;transform-origin:0 0;overflow:hidden;background:#000}
 #screen,#ov{position:absolute;top:0;right:0;bottom:0;left:0}
@@ -127,7 +127,7 @@ input{-webkit-user-select:text;user-select:text;font-family:inherit;font-size:34
 /* overlays */
 .modal{position:absolute;top:0;right:0;bottom:0;left:0;background:rgba(30,15,70,.55);display:flex;align-items:center;justify-content:center;z-index:20;animation:fade .2s}
 @keyframes fade{from{opacity:0}}
-.mbox{padding:26px 36px;min-width:560px;max-width:1040px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px}
+.mbox{padding:22px 36px;min-width:560px;max-width:1040px;max-height:680px;overflow-y:auto;-webkit-overflow-scrolling:touch;box-sizing:border-box;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px}
 .mbox h2{margin:0;font-size:64px}
 .mbox p{margin:0;font-size:30px;font-weight:700}
 .btns{display:flex;gap:20px;flex-wrap:wrap;justify-content:center}
@@ -165,7 +165,7 @@ input{-webkit-user-select:text;user-select:text;font-family:inherit;font-size:34
 .dots{display:flex;gap:10px;position:absolute;left:0;right:0;top:20px;justify-content:center}
 .dots i{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.7);border:4px solid #fff}
 .dots i.ok{background:var(--yellow)}.dots i.cur{border-color:var(--orange)}
-.sw-row{display:flex;gap:18px;align-items:center;font-size:30px;font-weight:700;padding:6px 0}
+.sw-row{display:flex;gap:18px;align-items:center;font-size:30px;font-weight:700;padding:2px 0}
 .sw-row .tg{min-width:130px;height:62px;border-radius:32px;font-size:28px;font-weight:900;color:#fff;background:#aaa}
 .sw-row .tg.on{background:var(--green)}
 .hint{position:absolute;left:0;right:0;text-align:center;color:#fff;font-weight:700;font-size:26px;text-shadow:0 2px 0 #000}
@@ -236,6 +236,10 @@ const save=()=>{try{if(ROOT.cur>=0)ROOT.p[ROOT.cur]=S;localStorage.setItem(KEY,J
 function selectProfile(i){if(!ROOT.p[i]){ROOT.p[i]=defState();ROOT.p[i].fresh=true;}S=ROOT.p[i];S.set=ROOT.set;ROOT.cur=i;save();}
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();};
 function tally(ok){const d=today();const r=S.days[d]||(S.days[d]={a:0,c:0});r.a++;if(ok)r.c++;const ks=Object.keys(S.days).sort();while(ks.length>14)delete S.days[ks.shift()];}
+/* ---------- 音源の取り込み(端末のIndexedDBに保存。リポジトリには音源を入れない) ---------- */
+function idb(op,val){return new Promise((res,rej)=>{try{const r=indexedDB.open('chibiCalc',1);r.onupgradeneeded=()=>r.result.createObjectStore('k');r.onerror=()=>rej(r.error);r.onsuccess=()=>{const db=r.result;const st=db.transaction('k',op==='get'?'readonly':'readwrite').objectStore('k');const q=op==='get'?st.get('sound'):st.put(val,'sound');q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);};}catch(e){rej(e);}});}
+function applySoundPack(sp){Object.assign(PACK.se,sp.se||{});Object.assign(PACK.bgm,sp.bgm||{});PACK.silent=false;}
+async function loadSavedSound(){try{const sp=await Promise.race([idb('get'),sleep(2500).then(()=>null)]);if(sp&&sp.se&&sp.bgm)applySoundPack(sp);}catch(e){}}
 /* ---------- audio ---------- */
 const AU={ctx:null,gain:null,buf:{},raw:{},el:null,track:null,want:null,check:false,ready:false};
 const SE=['tap','correct','wrong','hit','hit_evolved','defeat','levelup','evolve','clear','zannen','coin','egg_shake','egg_crack','egg_break','rare','cursor_a'];
@@ -386,10 +390,13 @@ SCREENS.home=()=>{
 };
 function settings(){
  const rows=[['bgm','BGM'],['se','こうかおん'],['shake','がめんの ゆれ'],['voice','もんだいの よみあげ']];
- const stat=ROOT.p.map((pr,i)=>{const d=pr&&pr.days[today()]||{a:0,c:0};return `<p style="font-size:24px">${ROOT.names[i]}: きょう <b>${d.a}</b> もん こたえて せいかい <b>${d.c}</b> もん</p>`;}).join('');
- const m=modal(`<h2 style="font-size:48px">おうちのひとへ</h2><div id="sr"></div>${stat}<div class="sw-row" style="font-size:24px">なまえ <input id="n0" maxlength="8" style="width:200px;font-size:26px" value="${ROOT.names[0]}"><input id="n1" maxlength="8" style="width:200px;font-size:26px" value="${ROOT.names[1]}"></div><p style="font-size:20px;color:#6a5a90">きろくは この たんまつの ブラウザに ほぞんされます(ふたりぶん べつべつ)。</p><div class="btns" id="sb"></div>`);
+ const stat=ROOT.p.map((pr,i)=>{const d=pr&&pr.days[today()]||{a:0,c:0};return `<p style="font-size:20px">${ROOT.names[i]}: きょう <b>${d.a}</b> もん こたえて せいかい <b>${d.c}</b> もん</p>`;}).join('');
+ const m=modal(`<h2 style="font-size:40px">おうちのひとへ</h2><div id="sr"></div>${stat}<div class="sw-row" style="font-size:24px">なまえ <input id="n0" maxlength="8" style="width:200px;font-size:26px" value="${ROOT.names[0]}"><input id="n1" maxlength="8" style="width:200px;font-size:26px" value="${ROOT.names[1]}"></div><div class="sw-row" style="font-size:22px"><span id="snd" style="text-align:left"></span><button class="btn blue" id="impb" style="height:56px;padding:0 22px;font-size:24px">おんげんを よみこむ</button><input type="file" id="impf" accept=".json,application/json" style="display:none"></div><p style="font-size:20px;color:#6a5a90">きろくは この たんまつの ブラウザに ほぞんされます(ふたりぶん べつべつ)。</p><div class="btns" id="sb"></div>`);
+ const snd=$('#snd',m);const sndTxt=()=>{snd.textContent=PACK.silent?'いま: おとが はいっていません':'いま: おとが はいっています';};sndTxt();
+ $('#impb',m).onclick=()=>{sfx('tap');$('#impf',m).click();};
+ $('#impf',m).onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const sp=JSON.parse(await f.text());if(!sp.se||!sp.bgm||!sp.se.tap||!sp.bgm.home)throw 0;await idb('put',sp);applySoundPack(sp);for(const n of SE){try{AU.raw[n]=b64ab(PACK.se[n]);AU.buf[n]=null;}catch(x){}}await decodeAll();AU.track=null;setBGM(AU.want);snd.textContent='よみこみました!';sfx('levelup');}catch(x){snd.textContent='よみこめませんでした(ファイルを かくにん)';}};
  const box=$('#sr',m);
- const draw=()=>{box.innerHTML='';rows.forEach(([k,l])=>{const r=el('div','sw-row',`<span style="width:300px;text-align:left;font-size:26px">${l}</span>`);const t2=el('button','btn tg'+(S.set[k]?' on':''),S.set[k]?'ON':'OFF');t2.style.height='52px';t2.onclick=()=>{S.set[k]=S.set[k]?0:1;save();if(k==='bgm')setBGM(AU.want);sfx('tap');draw();};r.append(t2);box.append(r);});};draw();
+ const draw=()=>{box.innerHTML='';rows.forEach(([k,l])=>{const r=el('div','sw-row',`<span style="width:300px;text-align:left;font-size:26px">${l}</span>`);const t2=el('button','btn tg'+(S.set[k]?' on':''),S.set[k]?'ON':'OFF');t2.style.height='46px';t2.style.minWidth='110px';t2.onclick=()=>{S.set[k]=S.set[k]?0:1;save();if(k==='bgm')setBGM(AU.want);sfx('tap');draw();};r.append(t2);box.append(r);});};draw();
  const sb=$('#sb',m);
  sb.append(btn('とじる','green',()=>{ROOT.names[0]=($('#n0',m).value||'').trim().slice(0,8)||'ひとりめ';ROOT.names[1]=($('#n1',m).value||'').trim().slice(0,8)||'ふたりめ';save();m.remove();if(ROOT.cur<0)go('who');else go('home');}));
  if(ROOT.cur>=0)sb.append(btn(ROOT.names[ROOT.cur]+'の きろくを けす','gray',()=>{const c=modal(`<h2>ほんとうに けす?</h2><p>${ROOT.names[ROOT.cur]}の ずかんも なかまも ぜんぶ きえます。</p><div class="btns"></div>`);const bb=$('.btns',c);bb.append(btn('やめる','green',()=>c.remove()),btn('けす','pink',()=>{const i=ROOT.cur;ROOT.p[i]=null;ROOT.cur=-1;S=defState();S.set=ROOT.set;save();go('who');}));}));
@@ -683,6 +690,7 @@ SCREENS.zukan=()=>{
 async function boot(){
  const lbi=$('#lbi'),msg=$('#lmsg');let done=0;const total=Object.keys(ATLAS).length;
  const tick=()=>{done++;lbi.style.width=Math.min(100,done/total*100)+'%';};
+ await loadSavedSound();
  AU.el=new Audio();AU.el.preload='auto';AU.blobTried={};
  AU.el.addEventListener('error',()=>{const n=AU.track;if(!n||AU.blobTried[n])return;AU.blobTried[n]=1;try{AU.el.src=URL.createObjectURL(new Blob([b64ab(PACK.bgm[n])],{type:'audio/mpeg'}));const p=AU.el.play();p&&p.catch&&p.catch(()=>{});}catch(e){}});
  for(const n of SE){try{AU.raw[n]=b64ab(PACK.se[n]);}catch(e){}}

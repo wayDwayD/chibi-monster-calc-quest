@@ -14,6 +14,12 @@
 - 問題は読み上げ(Web Speech API)。助詞「は」は「わ」で読ませています
 - Safari対策: 画面を離れて戻ったとき、BGM/効果音を復帰(`wake()` と `visibilitychange`)
 
+## iPad で全画面で遊ぶ(おすすめ)
+1. GitHub Pages を有効にする(Settings → Pages → Deploy from a branch → `main` / `/ (root)`)。
+2. iPad の Safari で公開URLを開く → 共有ボタン →「ホーム画面に追加」。以降はアプリのように全画面で起動します。
+3. 音を入れる: `python3 tools/make_sound_pack.py` で作った `chibi-sounds.json` をiPadに送り、
+   ゲームの設定(スピーカーのボタン)→「おんげんを よみこむ」で1回だけ読み込みます。端末内に保存され、リポジトリには残りません。
+
 ## 開発
 ```
 python3 tools/build.py   # src/ と assets/ から index.html を生成
