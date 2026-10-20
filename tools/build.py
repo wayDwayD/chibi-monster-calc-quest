@@ -12,7 +12,7 @@ def d(path, mime):
 atlas = json.load(open(p('src', 'atlas.json')))
 SE = ['tap','correct','wrong','hit','hit_evolved','defeat','levelup','evolve','clear','zannen','coin','egg_shake','egg_crack','egg_break','rare','cursor_a']
 pack = {
-  'atlas': {c: {'f': d(p('assets','atlas',c+'.webp'), 'image/webp'), 'r': a['r']} for c, a in atlas.items()},
+  'atlas': {c: {'f': d(p('assets','atlas',c+'.webp'), 'image/webp'), 'r': a['r'], 'as': a.get('as', c)} for c, a in atlas.items()},
   'bg': {n: d(p('assets','bg',n+'.jpg'), 'image/jpeg') for n in ['home','training','boss','boss_ura','gacha','zukan']},
   'se': {n: d(p('assets','se',n+'.mp3'), 'audio/mpeg') for n in SE},
   'bgm': {n: d(p('assets','bgm',n+'.mp3'), 'audio/mpeg') for n in ['home','training','boss']},
