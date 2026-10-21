@@ -126,6 +126,7 @@ input{-webkit-user-select:text;user-select:text;font-family:inherit;font-size:34
 .tco.d b{display:flex}.tco.d img{opacity:.55}
 .ans.hl{animation:hlp .5s ease-in-out 3;box-shadow:0 0 0 8px #fff7a8,0 8px 0 rgba(0,0,0,.28)}
 @keyframes hlp{50%{transform:scale(1.07)}}
+.qcard .maru{position:absolute;left:50%;top:50%;width:190px;height:190px;margin:-95px 0 0 -95px;border:16px solid #e8333a;border-radius:50%;box-sizing:border-box;display:flex;align-items:center;justify-content:center;white-space:nowrap;font-size:30px;font-weight:900;color:#e8333a;background:rgba(255,255,255,.93);pointer-events:none;z-index:9;box-shadow:0 0 0 5px rgba(255,255,255,.8)}
 .qcard .rev{position:absolute;left:60px;right:60px;top:calc(100% + 8px);padding:6px 10px;background:rgba(255,248,200,.97);border-radius:18px;border:4px solid #ffd23f;font-size:32px;font-weight:900;color:#1e7a3a;text-align:center}
 .qcard .spk{position:absolute;right:10px;top:8px;width:62px;height:62px;border-radius:50%;background:#e9dfff;display:flex;align-items:center;justify-content:center;border:4px solid #fff}
 .qcard .spk img{width:34px}
@@ -414,6 +415,7 @@ function Quiz(parent,onPick){
    ans.innerHTML='';Q.choices.forEach((c,i)=>{const b=el('button','ans c'+(i%3),c.h);b.onclick=()=>onPick(i,b,c);ans.append(b);});
    if(Q.after)Q.after(card);speak(Q.speak);},
   reveal(Q){[...ans.children].forEach((b,i)=>{if(Q.choices[i]&&Q.choices[i].v===Q.ans)b.classList.add('hl');});const r=el('div','rev','こたえは '+Q.ans);card.append(r);speak(Q.expl||('こたえわ '+nj(Q.ans)));setTimeout(()=>r.remove(),1500);},
+  maru(){const o=el('div','maru','せいかい!');card.append(o);o.animate([{opacity:0,transform:'scale(.3) rotate(-20deg)'},{opacity:1,transform:'scale(1.15) rotate(0)',offset:.3},{opacity:1,transform:'scale(1)',offset:.75},{opacity:0,transform:'scale(1)'}],{duration:900});setTimeout(()=>o.remove(),880);},
   oshii(){const o=el('div','oshii',`<img src="${im('ui','cloud_oshii')}" alt=""><div>おしい!</div>`);card.append(o);o.animate([{opacity:0,transform:'translate(-50%,-30%) scale(.6)'},{opacity:1,transform:'translate(-50%,-50%) scale(1)'},{opacity:1},{opacity:0}],{duration:1000});setTimeout(()=>o.remove(),980);},
   card,ans};
  return api;
@@ -706,7 +708,7 @@ SCREENS.drill=()=>{
  const hint=el('div','hint',`1もん せいかいで コイン +1 (きょうは あと ${Math.max(0,50-S.drillDay.c)}まい)`);hint.style.top='84px';s.append(hint);
  const Q=Quiz(s,(i,b,c)=>{
   sfx('tap');
-  if(c.v===Q.cur.ans){const fc=first;Q.cur.done=true;recordQ(Q.cur,fc,Q.cur.act||0);pc.done(fc);tally(true);sfx('correct');if(!fc)Q.reveal(Q.cur);if(first){okc++;if(S.drillDay.c<50){S.coins++;S.drillDay.c++;gain++;sfx('coin',.7);}}
+  if(c.v===Q.cur.ans){const fc=first;Q.cur.done=true;recordQ(Q.cur,fc,Q.cur.act||0);pc.done(fc);tally(true);sfx('correct');if(fc)Q.maru();else Q.reveal(Q.cur);if(first){okc++;if(S.drillDay.c<50){S.coins++;S.drillDay.c++;gain++;sfx('coin',.7);}}
    dots.children[n].classList.add('ok');Q.ans.style.pointerEvents='none';
    mon.animate([{transform:'translateY(0)'},{transform:'translateY(-40px) scale(1.1)'},{transform:'translateY(0)'}],{duration:450});
    $('#coins').textContent=S.coins;n++;save();
@@ -761,7 +763,7 @@ SCREENS.review=()=>{
  ticker(()=>{const q=Q.cur;if(q&&!q.done&&!document.hidden&&!document.querySelector('.modal'))q.act=(q.act||0)+100;},100);
  const Q=Quiz(s,(i,b,c)=>{
   sfx('tap');const q=Q.cur;
-  if(c.v===q.ans){const fc=first,good=fc&&(q.act||0)<slowMs(q);q.done=true;reviewResult(list[n],good);tally(true);sfx('correct');if(!fc)Q.reveal(q);
+  if(c.v===q.ans){const fc=first,good=fc&&(q.act||0)<slowMs(q);q.done=true;reviewResult(list[n],good);tally(true);sfx('correct');if(fc)Q.maru();else Q.reveal(q);
    if(fc){okc++;if(S.drillDay.c<50){S.coins++;S.drillDay.c++;gain++;sfx('coin',.7);}}
    dots.children[n].classList.add('ok');Q.ans.style.pointerEvents='none';
    mon.animate([{transform:'translateY(0)'},{transform:'translateY(-40px) scale(1.1)'},{transform:'translateY(0)'}],{duration:450});
