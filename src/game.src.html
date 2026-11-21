@@ -184,6 +184,13 @@ input{-webkit-user-select:text;user-select:text;font-family:inherit;font-size:34
 .gc .mach{position:absolute;left:50%;top:150px;transform:translateX(-50%);width:340px;height:340px}
 .gc .mach img{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);max-width:100%}
 .gc .cost{position:absolute;left:calc(50% - 280px);bottom:26px;width:560px;height:116px;font-size:48px}
+.gc .gpanel{position:absolute;top:150px;width:236px;padding:14px 10px;border-radius:24px;background:rgba(255,255,255,.88);border:4px solid #fff;box-shadow:0 5px 0 rgba(0,0,0,.18);text-align:center;font-size:22px;font-weight:700;color:#4a2c7a;display:flex;flex-direction:column;gap:8px;align-items:center}
+.gc .gpanel b:first-child{font-size:26px}.gc .gpanel small{font-size:15px;font-weight:700;opacity:.8}.gc .gl{left:34px}.gc .gr{right:34px}
+.gc .stp{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;width:100%}.gc .stp i{font-style:normal;font-size:34px;color:#ddd;text-shadow:0 2px 0 #bbb}.gc .stp i.on{color:#ffb400;text-shadow:0 2px 0 #b87400}
+.gc .fbar{width:100%;height:22px;border-radius:12px;background:#ddd;overflow:hidden;border:3px solid #fff}.gc .fbar span{display:block;height:100%;background:linear-gradient(#7be07b,#35b84a)}
+.gc .eggs{position:absolute;left:0;right:0;top:498px;display:flex;justify-content:center;gap:8px}
+.gc .egb{width:104px;height:70px;border-radius:20px;border:4px solid #fff;background:rgba(255,255,255,.78);box-shadow:0 4px 0 rgba(0,0,0,.2);display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:inherit;font-weight:900;color:#4a2c7a;cursor:pointer;padding:0;line-height:1.05}
+.gc .egb span{font-size:30px}.gc .egb small{font-size:17px}.gc .egb.on{background:#fff3c4;border-color:#ff9f1a;transform:translateY(-4px) scale(1.08)}
 .shk{animation:shk .35s linear infinite}
 @keyframes shk{20%{transform:translate(-50%,-50%) rotate(-9deg)}50%{transform:translate(-50%,-50%) rotate(9deg)}80%{transform:translate(-50%,-50%) rotate(-6deg)}}
 .gres{display:flex;flex-direction:column;align-items:center;gap:8px}
@@ -294,7 +301,7 @@ const bossHP=s=>200+35*(s-1)+3*(s-1)*(s-1);
 /* ---------- save (2 profiles) ---------- */
 const KEY='chibiCalcQuest.v2',OLDKEY='chibiCalcQuest.v1';
 const defSet=()=>({bgm:1,se:1,shake:1,voice:1});
-const defState=()=>({fresh:false,coins:5,shards:0,owned:{fire:1},evoSeen:{},weapons:{},armors:{},charms:{},charm:null,stickers:{},zb:{},zu:{},ze:{},cleared:{},unlocked:1,clears:0,mode:'k',mon:'fire',stage:1,round:1,rounds:{},star:{},zs:{},days:{},drillDay:{d:'',c:0},gpity:0,rv:[]});
+const defState=()=>({fresh:false,coins:5,shards:0,owned:{fire:1},evoSeen:{},weapons:{},armors:{},charms:{},charm:null,stickers:{},zb:{},zu:{},ze:{},cleared:{},unlocked:1,clears:0,mode:'k',mon:'fire',stage:1,round:1,rounds:{},star:{},zs:{},days:{},drillDay:{d:'',c:0},gpity:0,friend:{},gst:0,gfree:'',gsel:'',rv:[]});
 const NAMES0=['ひとりめ','ふたりめ','さんにんめ'],NPROF=3;
 const ROOT={cur:-1,names:NAMES0.slice(),set:defSet(),p:[null,null,null]};
 let S=defState();S.set=ROOT.set;
@@ -507,7 +514,7 @@ SCREENS.home=()=>{
  $('.mascot',s).style.left='20px';
  const start=btn('スタート','btn green main',()=>{const f=frontier();if(f){S.stage=f[0];S.round=f[1];save();}go('sel');});start.className='btn green main';
  const z=btn('ずかん','btn blue sub',()=>go('zukan'));z.className='btn blue sub';z.style.left='241px';
- const g=btn('ガチャ','btn orange sub',()=>go('gacha'));g.className='btn orange sub';g.style.left='515px';
+ const g=btn('ガチャ','btn orange sub',()=>go('gacha'));g.className='btn orange sub';g.style.left='515px';if(S.gst>=STAMP_N||freeReady())g.insertAdjacentHTML('beforeend','<span class="badge">!</span>');
  const nrv=(S.rv||[]).length;
  const d=btn('ドリル','btn yellow sub',()=>{if(!nrv){go('drill');return;}const m=modal('<h2>どっちを やる?</h2><div class="btns"></div>');$('.btns',m).append(btn('ドリル','yellow',()=>go('drill')),btn(`ふくしゅう (${nrv}もん)`,'pink',()=>go('review')),btn('やめる','gray',()=>m.remove()));});d.className='btn yellow sub';d.style.left='789px';
  if(nrv)d.insertAdjacentHTML('beforeend',`<span class="badge">${nrv}</span>`);
@@ -561,7 +568,7 @@ SCREENS.sel=()=>{
  const pPrev=pb('◀',-1),pNext=pb('▶',1),pCnt=el('div','chip','1/1');pCnt.style.cssText='font-size:20px;padding:2px 14px';pn.append(pPrev,pCnt,pNext);if(pages>1)s.append(pn);
  function mark(){[...mons.children].forEach(c=>c.classList.toggle('wk',!!S.owned[c.dataset.e]&&elOf(c.dataset.e)===weakOf(S.stage,S.round)));}
  function drawMons(){mons.innerHTML='';order.slice(page*PER,page*PER+PER).forEach(e=>{const own=S.owned[e];const c=el('button','mcard'+(own?'':' lock')+(S.mon===e?' on':''));c.dataset.e=e;
-  c.innerHTML=sp('monsters',e+(S.evoSeen[e]?'_stage2':'_stage1'))+(own?`<div class="nm">${MON[e].n1}</div><div class="st">${ELEMO[elOf(e)]}${'★'.repeat(MON[e].r)}</div>`:`<img class="lk" src="${im('ui','lock')}" alt=""><div class="nm">？？？</div><div class="st">ガチャでゲット</div>`);
+  c.innerHTML=sp('monsters',e+(S.evoSeen[e]?'_stage2':'_stage1'))+(own?`<div class="nm">${MON[e].n1}</div><div class="st">${ELEMO[elOf(e)]}${'★'.repeat(MON[e].r)}${fLv(e)>1?' ♥'+fLv(e):''}</div>`:`<img class="lk" src="${im('ui','lock')}" alt=""><div class="nm">？？？</div><div class="st">ガチャでゲット</div>`);
   c.onclick=()=>{if(!own){sfx('wrong');return;}sfx('tap');S.mon=e;save();[...mons.children].forEach(x=>x.classList.remove('on'));c.classList.add('on');upd();};mons.append(c);});
   pCnt.textContent=(page+1)+'/'+pages;pPrev.disabled=page<=0;pNext.disabled=page>=pages-1;mark();}
  const stg=el('div','stg','<div class="lbl">たたかう ボスを えらぼう</div>');
@@ -582,12 +589,12 @@ SCREENS.sel=()=>{
   $('.btns',m).append(btn('とじる','gray',()=>m.remove()));}
  function upd(){const m=MON[S.mon];const bs=stageBoss(S.stage,S.round);const w=bs.weak,sk=skillOf(S.mon),hit=elOf(S.mon)===w;
   info.innerHTML=`<b>${m.n1}</b> ${ELEMO[elOf(S.mon)]}${'★'.repeat(m.r)} で<br>ステージ${S.stage}-${S.round}「${bs.name}」<br>に ちょうせん!`;
-  info2.innerHTML=`<div>じゃくてん <b style="font-size:26px">${ELEMO[w]}${ELNAME[w]}</b>${hit?' <span style="color:#d4380d">◎ こうかばつぐん!</span>':''}</div><div style="font-size:16px;margin-top:2px">とくぎ「<b>${sk.n}</b>」<br>${sk.d}(Lv3で めざめる)</div>`;mark();}
+  info2.innerHTML=`<div>じゃくてん <b style="font-size:26px">${ELEMO[w]}${ELNAME[w]}</b>${hit?' <span style="color:#d4380d">◎ こうかばつぐん!</span>':''}</div><div style="font-size:16px;margin-top:2px">とくぎ「<b>${sk.n}</b>」<br>${sk.d}(Lv3で めざめる)</div>${fLv(S.mon)>1?`<div style="font-size:16px">なかよし <b style="color:#e0457b">${hearts(fLv(S.mon))}</b> ちから+${fLv(S.mon)-1}</div>`:''}`;mark();}
  drawMons();upd();
 };
 /* ---------- battle ---------- */
 const fmt=t=>{t=Math.max(0,Math.ceil(t));return Math.floor(t/60)+':'+String(t%60).padStart(2,'0');};
-function atkNow(){const m=MON[B.mon];let v=m.base+2*(B.lv-1);if(B.awake)v+=AWAKE_ATK;if(S.charm==='c_heart')v+=3;if(B.stage2)v*=m.evo;return Math.round(v);}
+function atkNow(){const m=MON[B.mon];let v=m.base+2*(B.lv-1);if(B.awake)v+=AWAKE_ATK;if(S.charm==='c_heart')v+=3;v+=fLv(B.mon)-1;if(B.stage2)v*=m.evo;return Math.round(v);}
 SCREENS.battle=(a)=>{
  const round=a.round||Math.min(3,roundsOf(a.stage)+1),bossInfo=stageBoss(a.stage,round);
  B={mode:a.mode,mon:a.mon,stage:a.stage,round,boss:bossInfo,tot:0,okFirst:0,msL:[],phase:'train',t:90,tmax:90,lv:S.charm==='c_boots'?2:1,exp:0,correct:0,hits:0,stage2:false,awake:false,hitN:0,sk:skillOf(a.mon),guard:0,hints:0,weak:bossInfo.weak,paused:0,lock:false,q:null,ens:0,defeated:0,combo:0,over:false,coinsGain:0,cg:null,cgn:0,cgCoins:0,newEnemies:[],pacer:Pacer()};
@@ -869,45 +876,81 @@ SCREENS.review=()=>{
  next();
 };
 /* ---------- gacha ---------- */
-const GACHA_MON=12,GACHA_PITY=20; // なかまは 12%。20回 でなければ かならず 1体(おまもり 18%、のこりは ステッカー)
-function rollGacha(){
- const r=Math.random()*100,un=ELEMS.filter(e=>!S.owned[e]);
- S.gpity=(S.gpity||0)+1;
- let kind=un.length&&(r<GACHA_MON||S.gpity>=GACHA_PITY)?'monster':r<30?'equip':'deco';
- if(kind==='monster'){S.gpity=0;const e=nextMonster();return{kind,id:e,cat:'monsters',img:e+'_stage1',name:MON[e].n1};}
- if(kind==='equip'){const all=CHARM.map(x=>['charm',x[0],x[1]]);const x=pick(all);return{kind:x[0],id:x[1],cat:'items',img:x[1],name:x[2]};}
- const x=pick(STK);return{kind:'sticker',id:x[0],cat:'stickers',img:x[0],name:x[1]};
+const STAMP_N=10,FREE_Q=10,DUP_MAX=5; // スタンプ10こで ごほうびタマゴ / きょう10もん せいかいで むりょう1かい / かぶると なかよしLv(さいだい5)
+const fLv=id=>Math.min(DUP_MAX,Math.max(1,(S.friend&&S.friend[id])||1)); // なかよしレベル。1つ上がるごとに ちから+1
+const dayC=()=>((S.days&&S.days[today()])||{}).c||0;
+const freeReady=()=>S.gfree!==today()&&dayC()>=FREE_Q;
+const GEGG=[['','🥚','おまかせ'],...Object.keys(ELNAME).map(k=>[k,ELEMO[k],ELNAME[k]])];
+/* えらんだ ぞくせいの なかまが でる。あたらしい子 6わり / かぶり 4わり。ごほうびタマゴは ★2いじょうの あたらしい子 */
+function pickMon(sel,bonus){
+ const pool=ELEMS.filter(e=>!sel||elOf(e)===sel),un=pool.filter(e=>!S.owned[e]),ow=pool.filter(e=>S.owned[e]);
+ const own=Object.keys(S.owned).length,gate=e=>own>=(RAR_GATE[MON[e].r]||0);
+ let cand=un.length&&(bonus||Math.random()<.6)?un:(ow.length?ow:un);
+ let ok=cand.filter(gate);
+ if(!ok.length&&cand===un&&ow.length){cand=ow;ok=cand.filter(gate);}
+ if(bonus){const hi=ok.filter(e=>MON[e].r>=2);if(hi.length)ok=hi;}
+ if(!ok.length){const lo=Math.min(...cand.map(e=>MON[e].r));ok=cand.filter(e=>MON[e].r===lo);}
+ const cls=[1,2,3,4].filter(r=>ok.some(e=>MON[e].r===r)),w=cls.map(r=>RAR_W[r]);
+ let x=Math.random()*w.reduce((a,b)=>a+b,0),r=cls[cls.length-1];for(let i=0;i<cls.length;i++){if(x<w[i]){r=cls[i];break;}x-=w[i];}
+ return pick(ok.filter(e=>MON[e].r===r));
 }
-function applyGacha(g){
- const maps={monster:S.owned,weapon:S.weapons,armor:S.armors,charm:S.charms,sticker:S.stickers};const m=maps[g.kind];
- if(m[g.id]){S.shards++;return false;}m[g.id]=1;return true;
+function rollGacha(sel,bonus){
+ const e=pickMon(sel,bonus),isNew=!S.owned[e];let up=0,shard=false;S.friend=S.friend||{};
+ if(isNew){S.owned[e]=1;S.friend[e]=1;}
+ else{const f=fLv(e);if(f<DUP_MAX){S.friend[e]=up=f+1;}else{S.shards++;shard=true;}}
+ let extra=null;
+ if(Math.random()<.25){const pl=[...CHARM.filter(x=>!S.charms[x[0]]).map(x=>['charm',x[0],'items',x[1]]),...STK.filter(x=>!S.stickers[x[0]]).map(x=>['sticker',x[0],'stickers',x[1]])];
+  if(pl.length){const x=pick(pl);(x[0]==='charm'?S.charms:S.stickers)[x[1]]=1;extra={kind:x[0],id:x[1],cat:x[2],name:x[3]};}}
+ return{kind:'monster',id:e,cat:'monsters',img:e+'_stage1',name:MON[e].n1,r:MON[e].r,isNew,up,shard,extra,bonus:!!bonus};
 }
+const hearts=n=>'♥'.repeat(n)+'♡'.repeat(DUP_MAX-n);
 SCREENS.gacha=()=>{
  setBGM('home');
  const s=screen('gc','gacha');s.append(backBtn('home'));
  const tr=el('div','top-r',coinChip()+`<div class="chip"><img src="${im('items','coin_shard')}" alt=""><b id="shd">${S.shards}</b>/10</div>`);s.append(tr);
  const mach=el('div','mach',`<img id="gm" src="${im('gacha','machine')}" alt="">`);s.append(mach);
  const ttl=el('div','ttl','ガチャを まわそう!');ttl.style.cssText='position:absolute;left:0;right:0;top:60px;font-size:60px';s.append(ttl);
- const go_=btn(`<img src="${im('items','coin')}" style="height:70px" alt=""> 10コインで まわす`,'orange cost',spin);go_.className='btn orange cost';s.append(go_);
- const ex=btn('かけらで なかまを よぶ','pink',()=>{if(S.shards<10||!ELEMS.some(e=>!S.owned[e])){sfx('wrong');return;}S.shards-=10;const e=grantMonster();save();sfx('rare');reveal({kind:'monster',cat:'monsters',img:e+'_stage1',name:MON[e].n1},true,true);});
- ex.style.cssText='position:absolute;left:30px;bottom:34px;width:340px;height:90px;font-size:26px;padding:0 10px';ex.className='btn pink';if(S.shards<10)ex.disabled=true;s.append(ex);
- let busy=false;
+ /* ひだり: スタンプカード / みぎ: きょうの むりょうガチャ */
+ const bonus0=S.gst>=STAMP_N,fr=freeReady(),used=S.gfree===today();
+ const stp=Array.from({length:STAMP_N},(_,k)=>`<i class="${k<Math.min(S.gst,STAMP_N)?'on':''}">★</i>`).join('');
+ s.append(el('div','gpanel gl',`<b>スタンプカード</b><div class="stp">${stp}</div><div>${bonus0?'<b style="color:#d4380d">ごほうびタマゴが<br>もらえるよ!</b>':`あと <b>${STAMP_N-S.gst}</b> かいで<br>ごほうびタマゴ!`}</div><small>★2いじょうの あたらしい子が でるよ</small>`));
+ const left=Math.min(FREE_Q,dayC());
+ s.append(el('div','gpanel gr',`<b>きょうの むりょう</b><div class="fbar"><span style="width:${Math.round(left/FREE_Q*100)}%"></span></div><div>${used?'きょうは もらったよ<br>また あした!':fr?'<b style="color:#d4380d">むりょうで<br>まわせるよ!</b>':`ドリルや たたかいで<br>あと <b>${FREE_Q-left}</b> もん せいかい`}</div><small>きょう ${FREE_Q}もん せいかいで 1かい</small>`));
+ /* タマゴの いろ(ぞくせい)を えらぶ */
+ const row=el('div','eggs');s.append(row);
+ const drawEggs=()=>{row.innerHTML='';GEGG.forEach(g=>{const b=el('button','egb'+(S.gsel===g[0]?' on':''),`<span>${g[1]}</span><small>${g[2]}</small>`);b.onclick=()=>{if(busy)return;sfx('tap');S.gsel=g[0];save();drawEggs();};row.append(b);});};
+ let busy=false;drawEggs();
+ const lbl=bonus0?'ごほうびタマゴを まわす!':fr?'むりょうで まわす!':`<img src="${im('items','coin')}" style="height:70px" alt=""> 10コインで まわす`;
+ const go_=btn(lbl,'orange cost',spin);go_.className='btn '+(bonus0||fr?'green':'orange')+' cost';if(bonus0)go_.style.fontSize='40px';s.append(go_);
+ const ex=btn('かけらで なかまを よぶ','pink',()=>{if(S.shards<10||!ELEMS.some(e=>!S.owned[e])){sfx('wrong');return;}S.shards-=10;const e=grantMonster();save();sfx('rare');reveal({kind:'monster',cat:'monsters',img:e+'_stage1',name:MON[e].n1,id:e,r:MON[e].r,isNew:true,up:0,shard:false,extra:null,bonus:false});});
+ ex.style.cssText='position:absolute;left:30px;bottom:34px;width:300px;height:90px;font-size:24px;padding:0 10px';ex.className='btn pink';if(S.shards<10)ex.disabled=true;s.append(ex);
  async function spin(){
-  if(busy)return;if(S.coins<10){sfx('wrong');const m=modal('<h2>コインが たりないよ</h2><p>ドリルで コインを ためよう</p><div class="btns"></div>');$('.btns',m).append(btn('ドリルへ','yellow',()=>go('drill')),btn('とじる','gray',()=>m.remove()));return;}
-  busy=true;S.coins-=10;const g=rollGacha();const isNew=applyGacha(g);save();$('#coins').textContent=S.coins;
-  const gm=$('#gm');const rare=g.kind==='monster';
-  gm.classList.add('shk');sfx('egg_shake');await sleep(900);gm.classList.remove('gm');
-  gm.classList.remove('shk');gm.src=im('gacha',rare?'egg_gold':'egg_normal');gm.style.width='260px';gm.classList.add('shk');sfx('egg_shake');await sleep(1100);
+  if(busy)return;
+  const bonus=S.gst>=STAMP_N,free=!bonus&&freeReady();
+  if(!bonus&&!free&&S.coins<10){sfx('wrong');const m=modal('<h2>コインが たりないよ</h2><p>ドリルで コインを ためよう</p><div class="btns"></div>');$('.btns',m).append(btn('ドリルへ','yellow',()=>go('drill')),btn('とじる','gray',()=>m.remove()));return;}
+  busy=true;
+  if(bonus)S.gst-=STAMP_N;else{if(free)S.gfree=today();else S.coins-=10;S.gst=(S.gst||0)+1;}
+  const g=rollGacha(S.gsel,bonus);save();$('#coins').textContent=S.coins;
+  const gm=$('#gm');const gold=g.r>=2||bonus;
+  gm.classList.add('shk');sfx('egg_shake');await sleep(900);
+  gm.classList.remove('shk');gm.src=im('gacha',gold?'egg_gold':'egg_normal');gm.style.width='260px';gm.classList.add('shk');sfx('egg_shake');await sleep(1100);
   gm.src=im('gacha','egg_crack');sfx('egg_crack');await sleep(800);
   gm.src=im('gacha','egg_breaking');sfx('egg_break');await sleep(700);
   gm.classList.remove('shk');
-  await reveal(g,isNew,rare);
+  await reveal(g);
   busy=false;
  }
- function reveal(g,isNew,rare){
+ function reveal(g){
   return new Promise(res=>{
-   sfx(rare?'rare':'levelup');if(rare)speak('なかまが ふえたよ');
-   const m=modal(`<div class="gres"><h2 class="ttl" style="font-size:70px;-webkit-text-stroke-color:${rare?'#b34b00':'#5a2fa8'}">${isNew?'あたらしい!':'かぶったよ'}</h2><img class="it" src="${im(g.cat,g.img)}" alt=""><p style="font-size:44px;font-weight:900">${g.name}</p>${g.kind==='monster'?`<p style="font-size:30px;font-weight:900;color:#b34b00">${ELEMO[elOf(g.id)]} ${'★'.repeat(MON[g.id].r)} ${RAR[MON[g.id].r]}</p><p style="font-size:26px">とくぎ「${skillOf(g.id).n}」</p>`:''}${isNew?'':`<p style="font-size:28px"><img src="${im('items','coin_shard')}" style="height:42px;vertical-align:middle" alt=""> コインのかけら +1</p>`}<div class="btns"></div></div>`);
+   const rare=g.r>=3||(g.isNew&&g.r>=2);
+   sfx(rare?'rare':'levelup');speak(g.isNew?'なかまが ふえたよ':g.shard?'なかよし マックス':'なかよしレベル アップ');
+   const head=g.isNew?'あたらしい!':g.shard?'なかよしマックス!':'なかよしレベル UP!';
+   let info='';
+   if(g.isNew)info=`<p style="font-size:26px">とくぎ「${skillOf(g.id).n}」</p>`;
+   else if(g.shard)info=`<p style="font-size:26px"><img src="${im('items','coin_shard')}" style="height:38px;vertical-align:middle" alt=""> コインのかけら +1</p>`;
+   else info=`<p style="font-size:34px;font-weight:900;color:#e0457b">${hearts(g.up)} ちから +${g.up-1}</p>`;
+   const ex=g.extra?`<p style="font-size:24px;margin-top:2px"><img src="${im(g.extra.cat,g.extra.id)}" style="height:50px;vertical-align:middle" alt=""> おまけ「${g.extra.name}」 ゲット!</p>`:'';
+   const m=modal(`<div class="gres">${g.bonus?'<div class="chip" style="font-size:24px">ごほうびタマゴ!</div>':''}<h2 class="ttl" style="font-size:60px;margin:0;-webkit-text-stroke-color:${rare?'#b34b00':'#5a2fa8'}">${head}</h2><img class="it" src="${im(g.cat,g.img)}" alt="" style="width:200px;height:200px"><p style="font-size:42px;font-weight:900">${g.name}</p><p style="font-size:28px;font-weight:900;color:#b34b00">${ELEMO[elOf(g.id)]} ${'★'.repeat(MON[g.id].r)} ${RAR[MON[g.id].r]}</p>${info}${ex}<div class="btns"></div></div>`);
    m.firstElementChild.style.background='radial-gradient(circle at 50% 30%,#fff9d0,#fff)';
    $('.btns',m).append(btn('もういちど','orange',()=>{m.remove();go('gacha');}),btn('おしまい','blue',()=>{m.remove();go('home');}));res();
   });
@@ -921,7 +964,7 @@ SCREENS.zukan=()=>{
  const t=el('div','ttl','ずかん');t.style.cssText='position:absolute;left:0;right:0;top:12px;font-size:60px';s.append(t);
  const tabs=el('div','tabs'),grid=el('div','zgrid');s.append(tabs,grid);
  const defs=[
-  ['なかま',()=>ELEMS.flatMap(e=>[[S.owned[e],'monsters',e+'_stage1',MON[e].n1,ELEMO[elOf(e)]+'★'.repeat(MON[e].r)],[S.evoSeen[e],'monsters',e+'_stage2',MON[e].n2,ELEMO[elOf(e)]+'★'.repeat(MON[e].r)]])],
+  ['なかま',()=>ELEMS.flatMap(e=>[[S.owned[e],'monsters',e+'_stage1',MON[e].n1,ELEMO[elOf(e)]+'★'.repeat(MON[e].r)+(fLv(e)>1?' ♥'+fLv(e):'')],[S.evoSeen[e],'monsters',e+'_stage2',MON[e].n2,ELEMO[elOf(e)]+'★'.repeat(MON[e].r)]])],
   ['ミニボス',()=>SB.map((b,i)=>[S.zs[i],'bosses',SBK(i),b[1]])],
   ['ボス',()=>BOSSN.map((n,i)=>[S.zb[i],'bosses',bossKey(i,false),n])],
   ['うらボス',()=>BOSSN.map((n,i)=>[S.zu[i],'bosses',bossKey(i,true),n+'(うら)'])],
