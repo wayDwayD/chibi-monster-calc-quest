@@ -70,5 +70,31 @@
   "thunderbeast",
   "robot",
   "windspirit"
- ]
+ ],
+ "enemy_sheet1.webp": {
+  "as": "enemies",
+  "tag": "enemies2",
+  "ids": [
+   "jelly",
+   "pumpkin",
+   "cactus",
+   "karakasa",
+   "snowman",
+   "cloud",
+   "robot",
+   "skull",
+   "mole",
+   "hedgehog",
+   "puffer",
+   "squid",
+   "imp",
+   "bulb",
+   "dango",
+   "sock",
+   "lamp",
+   "cg_silver",
+   "cg_gold",
+   "cg_rainbow"
+  ]
+ }
 }

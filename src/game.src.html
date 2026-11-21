@@ -258,7 +258,11 @@ const WEAKX=2,BOSS_T=65,AWAKE_ATK=8;
 const BOSSN=['スライム','キノコ','コウモリ','いわゴーレム','ガイコツ','こおりペンギン','ドクロガニ','ひとつめオバケ','マグマトカゲ','ロボット','ミイラ','ドラゴン','まおう'];
 const BOSSK=['slime','mushroom','bat','golem','skeleton','penguin','crab','ghost','lizard','robot','mummy','dragon','maou'];
 const bossKey=(i,ura)=>`boss${String(i+1).padStart(2,'0')}_${BOSSK[i]}${ura?'_ura':''}`;
-const ENEMY=[['slime','ちいさなスライム'],['acorn','どんぐりおばけ'],['egg_chick','ことりのたまご'],['mini_mushroom','ミニキノコ'],['bat_chick','ひよこコウモリ'],['mini_ghost','ミニゴースト'],['rock','こいしのかたまり'],['crab','ちびカニ']];
+const ENEMY=[['slime','ちいさなスライム',2],['acorn','どんぐりおばけ',2],['egg_chick','ことりのたまご',2],['mini_mushroom','ミニキノコ',2],['bat_chick','ひよこコウモリ',2],['mini_ghost','ミニゴースト',2],['rock','こいしのかたまり',3],['crab','ちびカニ',2],
+ ['jelly','オレンジゼリー',1],['pumpkin','かぼちゃおばけ',2],['cactus','ミニサボテン',2],['karakasa','からかさおばけ',2],['snowman','ゆきだるま',2],['cloud','ふわふわくも',1],['robot','ちびロボ',3],['skull','ドクロぼうず',2],['mole','ちびもぐら',2],['hedgehog','ハリネズミ',3],['puffer','ぷくぷくフグ',2],['squid','ちびイカ',2],['imp','ひとつめこぞう',2],['bulb','でんきゅうくん',1],['dango','おだんごおばけ',2],['sock','かたっぽくつした',1],['lamp','ちびランプ',2]];
+/* コインおばけ(レア敵): [key,なまえ,たおすのに必要な回数,もらえるコイン,出る確率(1たいごと)] */
+const COINGH=[['cg_silver','ぎんコインおばけ',3,4,.05],['cg_gold','きんコインおばけ',3,12,.015],['cg_rainbow','にじコインおばけ',4,40,.003]];
+const nextEnemy=()=>{let e=pick(ENEMY);for(let i=0;i<6&&B&&B.en&&e===B.en;i++)e=pick(ENEMY);return e;};
 const WEAP=[['w_wooden_sword','きのつるぎ',4],['w_star_wand','ほしのつえ',5],['w_hammer','ハンマー',6],['w_bow','ゆみ',7],['w_flame_sword','ほのおのつるぎ',9],['w_rainbow_wand','にじのつえ',11]];
 const ARM=[['a_hat','ぼうし',4],['a_wood_shield','きのたて',5],['a_armor','よろい',6],['a_cape','マント',7],['a_star_shield','ほしのたて',9],['a_light_armor','ひかりのよろい',12]];
 const CHARM=[['c_heart','ハートのおまもり','ちから +3'],['c_clock','とけいのおまもり','ボスのじかん +10びょう'],['c_star','ほしのおまもり','けいけんちが 1.5ばい'],['c_boots','くつのおまもり','Lv2から スタート'],['c_flute','ふえのおまもり','ときどき コインが ふえる'],['c_ribbon','リボンのおまもり','ボスの HPが すこし へる']];
@@ -560,7 +564,7 @@ const fmt=t=>{t=Math.max(0,Math.ceil(t));return Math.floor(t/60)+':'+String(t%60
 function atkNow(){const m=MON[B.mon];let v=m.base+2*(B.lv-1);if(B.awake)v+=AWAKE_ATK;if(S.charm==='c_heart')v+=3;if(B.stage2)v*=m.evo;return Math.round(v);}
 SCREENS.battle=(a)=>{
  const bossInfo=bossOf(a.stage);
- B={mode:a.mode,mon:a.mon,stage:a.stage,boss:bossInfo,phase:'train',t:90,tmax:90,lv:S.charm==='c_boots'?2:1,exp:0,correct:0,hits:0,stage2:false,awake:false,hitN:0,sk:skillOf(a.mon),guard:0,hints:0,weak:weakOf(a.stage),paused:0,lock:false,q:null,ens:0,defeated:0,combo:0,over:false,coinsGain:0,newEnemies:[],pacer:Pacer()};
+ B={mode:a.mode,mon:a.mon,stage:a.stage,boss:bossInfo,phase:'train',t:90,tmax:90,lv:S.charm==='c_boots'?2:1,exp:0,correct:0,hits:0,stage2:false,awake:false,hitN:0,sk:skillOf(a.mon),guard:0,hints:0,weak:weakOf(a.stage),paused:0,lock:false,q:null,ens:0,defeated:0,combo:0,over:false,coinsGain:0,cg:null,cgn:0,cgCoins:0,newEnemies:[],pacer:Pacer()};
  setBGM('training');
  const s=screen('battle');
  s.innerHTML=`<div class="world"><div class="bgimg" id="bgi"></div>
@@ -591,7 +595,13 @@ function spawnEnemy(first){
  if(!B)return;const E=B.E,boss=B.phase==='boss';
  E.getAnimations().forEach(a=>a.cancel());E.classList.toggle('boss',boss);$('#ebar').classList.toggle('boss',boss);
  if(boss){$('#enm').textContent=B.boss.name;$('#eimg').src=im('bosses',B.boss.key);B.ehpMax=Math.round(B.boss.hp*(S.charm==='c_ribbon'?.92:1));B.ehp=B.ehpMax;$('#ehp').style.width='100%';}
- else{const e=pick(ENEMY);B.en=e;B.need=B.ens<1?1:2;B.got=0;B.ens++;$('#enm').textContent=e[1];$('#eimg').src=im('enemies',e[0]);$('#ehp').style.width='100%';}
+ else{let e=null,cg=null;
+  if(B.ens>=2&&B.cgn<2){const r=Math.random();let a=0;for(const g of COINGH){a+=g[4];if(r<a){cg=g;break;}}}
+  if(cg){e=cg;B.cg=cg;B.cgn++;B.need=cg[2];}else{B.cg=null;e=nextEnemy();B.need=B.ens<1?1:e[2];}
+  B.en=e;B.got=0;B.ens++;$('#enm').textContent=(cg?'✨ ':'')+e[1];$('#eimg').src=im('enemies',e[0]);$('#ehp').style.width='100%';
+  $('#eimg').style.filter=cg?'drop-shadow(0 0 14px #ffd54a) drop-shadow(0 0 30px #ffb300)':'';
+  if(cg){sfx('rare');banner('コインおばけだ!',1300,'#b87400');speak('コインおばけだ');}
+ }
  $('#eimg').style.transform='none';E.style.opacity=1;
  if(!first)E.animate([{transform:'translateX(260px)',opacity:0},{transform:'translateX(0)',opacity:1}],{duration:380,easing:'ease-out'});
 }
@@ -665,6 +675,7 @@ async function doCorrect(missedQ){
 async function killEnemy(){
  const ec=ctr(B.E);sfx('defeat');B.defeated++;
  S.ze[B.en[0]]=1;
+ if(B.cg){const v=B.cg[3];S.coins+=v;B.coinsGain+=v;B.cgCoins+=v;save();for(let k=0;k<(v>=40?18:v>=12?12:7);k++)setTimeout(()=>{if(B)popFx('items','coin',ec.x+(Math.random()-.5)*240,ec.y-60+(Math.random()-.5)*120,70,900);},k*70);if(v>=12)popFx('fx_common','fireworks',ec.x,ec.y-40,460,1000);floatTxt('+'+v+' コイン!',ec.x-200,ec.y-150,'dmg','#b87400');sfx('coin');}
  popFx('fx_common','explosion',ec.x,ec.y,300,600);
  B.E.animate([{opacity:1,transform:'scale(1)'},{opacity:0,transform:'scale(1.25)'}],{duration:420,fill:'forwards'});
  if(S.charm==='c_flute'&&B.defeated%2===0){S.coins++;B.coinsGain++;floatTxt('+1',ec.x+30,ec.y-60,'dmg','#b87400');sfx('coin',.6);}
@@ -714,7 +725,7 @@ async function bossWin(){
  const newMon=null;
  save();
  sfx('clear');setBGM('home');
- const m=modal(`<h2 class="ttl" style="font-size:96px;-webkit-text-stroke-color:#b34b00">クリア!</h2><div class="gres"><img class="it" src="${im('bosses',B.boss.key)}" alt="" style="width:150px;height:150px;transform:rotate(-8deg)"></div><p style="font-size:38px">${B.boss.name} を たおした! ずかんに とうろく!</p><p style="font-size:38px"><img src="${im('items','coin')}" style="height:46px;vertical-align:middle" alt=""> コイン +${coins}${first?'(はじめてクリア!)':''}</p>${newMon?`<p class="new" style="font-size:40px">あたらしい なかま! ${MON[newMon].n1}</p><img src="${im('monsters',newMon+'_stage1')}" style="height:140px" alt="">`:''}<div class="btns"></div>`);
+ const m=modal(`<h2 class="ttl" style="font-size:96px;-webkit-text-stroke-color:#b34b00">クリア!</h2><div class="gres"><img class="it" src="${im('bosses',B.boss.key)}" alt="" style="width:150px;height:150px;transform:rotate(-8deg)"></div><p style="font-size:38px">${B.boss.name} を たおした! ずかんに とうろく!</p><p style="font-size:38px"><img src="${im('items','coin')}" style="height:46px;vertical-align:middle" alt=""> コイン +${coins}${first?'(はじめてクリア!)':''}</p>${B.cgCoins?`<p style="font-size:30px;color:#b87400">コインおばけから +${B.cgCoins}コイン ゲット!</p>`:''}${newMon?`<p class="new" style="font-size:40px">あたらしい なかま! ${MON[newMon].n1}</p><img src="${im('monsters',newMon+'_stage1')}" style="height:140px" alt="">`:''}<div class="btns"></div>`);
  speak('クリア! やったね');
  const bb=$('.btns',m);
  if(st<26&&st+1<=S.unlocked)bb.append(btn('つぎの ステージ','green',()=>{S.stage=st+1;save();go('battle',{mode:S.mode,mon:S.mon,stage:S.stage});}));
@@ -732,7 +743,7 @@ function grantMonster(){const e=nextMonster();if(!e)return null;S.owned[e]=1;ret
 function bossLose(){
  endBattle();sfx('zannen');setBGM('home');
  const pct=Math.max(0,Math.round(B.ehp/B.ehpMax*100));S.coins+=3;save();
- const m=modal(`<h2 class="ttl" style="font-size:80px;-webkit-text-stroke-color:#2f6fd8">あとちょっと!</h2><img src="${im('bosses',B.boss.key)}" style="width:200px" alt=""><div style="width:560px"><div class="bar" style="height:30px"><i style="width:${pct}%;background:linear-gradient(#ff9a9a,#ff3d3d)"></i></div></div><p>${B.boss.name} の のこり ${pct}%</p><p style="font-size:26px;color:#6a5a90">つよい なかまが いたら かてるかも! ドリルで コインを ためて ガチャを まわそう</p><p style="font-size:30px"><img src="${im('items','coin')}" style="height:38px;vertical-align:middle" alt=""> コイン +3 ゲット</p><div class="btns"></div>`);
+ const m=modal(`<h2 class="ttl" style="font-size:80px;-webkit-text-stroke-color:#2f6fd8">あとちょっと!</h2><img src="${im('bosses',B.boss.key)}" style="width:200px" alt=""><div style="width:560px"><div class="bar" style="height:30px"><i style="width:${pct}%;background:linear-gradient(#ff9a9a,#ff3d3d)"></i></div></div><p>${B.boss.name} の のこり ${pct}%</p>${B.cgCoins?`<p style="font-size:28px;color:#b87400">コインおばけから +${B.cgCoins}コイン もらったよ</p>`:''}<p style="font-size:26px;color:#6a5a90">つよい なかまが いたら かてるかも! ドリルで コインを ためて ガチャを まわそう</p><p style="font-size:30px"><img src="${im('items','coin')}" style="height:38px;vertical-align:middle" alt=""> コイン +3 ゲット</p><div class="btns"></div>`);
  speak('あとちょっと! またちょうせんしてね');
  const bb=$('.btns',m);bb.append(btn('もういちど','green',()=>go('sel')),btn('ドリル','yellow',()=>go('drill')),btn('ガチャ','orange',()=>go('gacha')),btn('ホーム','blue',()=>go('home')));
 }
@@ -875,7 +886,7 @@ SCREENS.zukan=()=>{
   ['なかま',()=>ELEMS.flatMap(e=>[[S.owned[e],'monsters',e+'_stage1',MON[e].n1,ELEMO[elOf(e)]+'★'.repeat(MON[e].r)],[S.evoSeen[e],'monsters',e+'_stage2',MON[e].n2,ELEMO[elOf(e)]+'★'.repeat(MON[e].r)]])],
   ['ボス',()=>BOSSN.map((n,i)=>[S.zb[i],'bosses',bossKey(i,false),n])],
   ['うらボス',()=>BOSSN.map((n,i)=>[S.zu[i],'bosses',bossKey(i,true),n+'(うら)'])],
-  ['てき',()=>ENEMY.map(e=>[S.ze[e[0]],'enemies',e[0],e[1]])],
+  ['てき',()=>[...ENEMY.map(e=>[S.ze[e[0]],'enemies',e[0],e[1]]),...COINGH.map(e=>[S.ze[e[0]],'enemies',e[0],e[1],'レア +'+e[3]+'コイン'])]],
   ['どうぐ',()=>[...WEAP.filter(x=>S.weapons[x[0]]).map(x=>[1,'items',x[0],x[1]]),...ARM.filter(x=>S.armors[x[0]]).map(x=>[1,'items',x[0],x[1]]),...CHARM.map(x=>[S.charms[x[0]],'items',x[0],x[1]])]],
   ['ステッカー',()=>STK.map(x=>[S.stickers[x[0]],'stickers',x[0],x[1]])]
  ];

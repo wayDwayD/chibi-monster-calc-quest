@@ -38,7 +38,7 @@ def keyed_mask(a):
     return bg
 
 
-def process(sheet, ids, tag):
+def process(sheet, ids, tag, single=False):
     im = Image.open(p('assets', 'source', sheet)).convert('RGB')
     a = np.asarray(im)
     bg = keyed_mask(a)
@@ -59,7 +59,7 @@ def process(sheet, ids, tag):
         ys = ys + objs[i - 1][0].start; xs = xs + objs[i - 1][1].start
         rec = dict(id=i, ys=ys, xs=xs, cy=ys.mean(), cx=xs.mean())
         (cores if ar >= 3000 else smalls).append(rec)
-    rows = len(ids) // 2
+    rows = -(-len(ids) // 4) if single else len(ids) // 2   # 1行に4つ(なかまは 進化前/後 x2種類、敵は1体x4)
 
     def kmeans1d(v, k):                              # 1次元k-means(行・列の中心を求める)
         v = np.array(v); c = np.quantile(v, (np.arange(k) + .5) / k)
@@ -112,9 +112,13 @@ def process(sheet, ids, tag):
     ordered = [(None, None, None, masks.get((r, c))) for r in range(rows) for c in range(4)]
     sprites = {}
     for k, c in enumerate(ordered):
-        pair, st = divmod(k, 2)
-        if pair >= len(ids): break
-        name = f'{ids[pair]}_stage{st + 1}'
+        if single:
+            if k >= len(ids): break
+            name = ids[k]
+        else:
+            pair, st = divmod(k, 2)
+            if pair >= len(ids): break
+            name = f'{ids[pair]}_stage{st + 1}'
         comp = c[3]
         if comp is None: continue
         ys, xs = np.nonzero(comp)
@@ -159,9 +163,11 @@ def main():
     for n, (sheet, ids) in enumerate(cfg.items(), 1):
         if not os.path.exists(p('assets', 'source', sheet)):
             print('skip (no source):', sheet); continue
-        tag = f'mons{n}'
-        rects = process(sheet, ids, tag)
-        aj[tag] = {'f': f'atlas/{tag}.png', 'as': 'monsters', 'r': rects}
+        if isinstance(ids, dict):                      # 敵などの単体シート: {"as":"enemies","tag":"enemies2","ids":[...]}
+            tag = ids['tag']; rects = process(sheet, ids['ids'], tag, single=True); kind = ids['as']
+        else:                                          # なかま(進化前/後)シート
+            tag = f'mons{n}'; rects = process(sheet, ids, tag); kind = 'monsters'
+        aj[tag] = {'f': f'atlas/{tag}.png', 'as': kind, 'r': rects}
     json.dump(aj, open(p('src', 'atlas.json'), 'w', encoding='utf8'), ensure_ascii=False, separators=(',', ':'))
 
 
