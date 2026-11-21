@@ -17,6 +17,14 @@ pack = {
   'se': {n: d(p('assets','se',n+'.mp3'), 'audio/mpeg') for n in SE},
   'bgm': {n: d(p('assets','bgm',n+'.mp3'), 'audio/mpeg') for n in ['home','training','boss']},
 }
+extra = p('src', 'monsters_extra.json')
+pack['mon'] = json.load(open(extra, encoding='utf8')) if os.path.exists(extra) else {}
+for k, m in pack['mon'].items():  # 追加モンスターの入力チェック
+    assert m['fx'] in ('fire','water','grass','thunder','ice','earth','wind','light'), (k, 'fx')
+    assert m['r'] in (1,2,3,4) and m['sk'] in ('time','guard','hint','crit','coin','combo'), (k, 'r/sk')
+    assert isinstance(m['base'], (int, float)) and m['evo'] >= 1.3, (k, 'base/evo')
+    for c in ('stage1','stage2'):
+        assert any(k + '_' + c in a['r'] for a in atlas.values()), (k, c, 'atlasにスプライトがない')
 pack['silent'] = bool(MISSING)
 src = open(p('src', 'game.src.html'), encoding='utf8').read()
 k = src.index('<script>\n"use strict";')

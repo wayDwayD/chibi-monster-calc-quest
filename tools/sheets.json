@@ -1,0 +1,74 @@
+{
+ "mon_sheet1.webp": [
+  "embham",
+  "frogtide",
+  "mushroom",
+  "bee",
+  "penguin",
+  "armadillo",
+  "owl",
+  "moonrabbit",
+  "volcturtle",
+  "octopus"
+ ],
+ "mon_sheet2.webp": [
+  "sweetpotato",
+  "sodajelly",
+  "broccoli",
+  "popcorn",
+  "kakigori",
+  "onigiri",
+  "cottoncandy",
+  "cookie",
+  "chili",
+  "teacup"
+ ],
+ "mon_sheet3.webp": [
+  "beetle",
+  "stagbeetle",
+  "ladybug",
+  "butterfly",
+  "firefly",
+  "snail",
+  "dragonfly",
+  "pillbug",
+  "ant",
+  "spider"
+ ],
+ "mon_sheet4.webp": [
+  "jellyfish",
+  "crab",
+  "seahorse",
+  "seal",
+  "orca",
+  "starfish",
+  "manta",
+  "urchin",
+  "anglerfish",
+  "shark"
+ ],
+ "mon_sheet5.webp": [
+  "lion",
+  "wolf",
+  "panda",
+  "elephant",
+  "monkey",
+  "giraffe",
+  "unicorn",
+  "goat",
+  "sloth",
+  "otter"
+ ],
+ "mon_sheet6.webp": [
+  "dragon",
+  "slime",
+  "golem",
+  "ghost",
+  "phoenix",
+  "fairy",
+  "seaserpent",
+  "thunderbeast",
+  "robot",
+  "windspirit"
+ ]
+}
