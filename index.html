@@ -505,7 +505,7 @@ SCREENS.home=()=>{
  const m=MON[S.mon]||MON.fire;
  s.append(Object.assign(el('div','mascot',sp('monsters',S.mon+(S.evoSeen[S.mon]?'_stage2':'_stage1'))),{}));
  $('.mascot',s).style.left='20px';
- const start=btn('スタート','btn green main',()=>go('sel'));start.className='btn green main';
+ const start=btn('スタート','btn green main',()=>{const f=frontier();if(f){S.stage=f[0];S.round=f[1];save();}go('sel');});start.className='btn green main';
  const z=btn('ずかん','btn blue sub',()=>go('zukan'));z.className='btn blue sub';z.style.left='241px';
  const g=btn('ガチャ','btn orange sub',()=>go('gacha'));g.className='btn orange sub';g.style.left='515px';
  const nrv=(S.rv||[]).length;
@@ -582,7 +582,7 @@ SCREENS.sel=()=>{
   $('.btns',m).append(btn('とじる','gray',()=>m.remove()));}
  function upd(){const m=MON[S.mon];const bs=stageBoss(S.stage,S.round);const w=bs.weak,sk=skillOf(S.mon),hit=elOf(S.mon)===w;
   info.innerHTML=`<b>${m.n1}</b> ${ELEMO[elOf(S.mon)]}${'★'.repeat(m.r)} で<br>ステージ${S.stage}-${S.round}「${bs.name}」<br>に ちょうせん!`;
-  info2.innerHTML=`<div>よわてん <b style="font-size:26px">${ELEMO[w]}${ELNAME[w]}</b>${hit?' <span style="color:#d4380d">◎ こうかばつぐん!</span>':''}</div><div style="font-size:16px;margin-top:2px">とくぎ「<b>${sk.n}</b>」<br>${sk.d}(Lv3で めざめる)</div>`;mark();}
+  info2.innerHTML=`<div>じゃくてん <b style="font-size:26px">${ELEMO[w]}${ELNAME[w]}</b>${hit?' <span style="color:#d4380d">◎ こうかばつぐん!</span>':''}</div><div style="font-size:16px;margin-top:2px">とくぎ「<b>${sk.n}</b>」<br>${sk.d}(Lv3で めざめる)</div>`;mark();}
  drawMons();upd();
 };
 /* ---------- battle ---------- */
@@ -640,8 +640,8 @@ async function _startBoss(){
  const bonus=(S.charm==='c_clock'?10:0)+(B.awake&&B.sk.t==='time'?B.sk.v:0);B.tmax=B.t=BOSS_T+bonus;B.weakHit=elOf(B.mon)===B.weak;
  $('#phase').textContent='ボスせん!';
  B.quiz.card.style.visibility='hidden';B.quiz.ans.style.visibility='hidden';
- const m=modal(`<h2 class="ttl" style="font-size:72px;-webkit-text-stroke-color:#b3260f">ボスが あらわれた!</h2><img src="${im('bosses',B.boss.key)}" style="width:260px" alt=""><p style="font-size:44px">${B.boss.name}</p><p style="font-size:38px;font-weight:900">よわてん ${ELEMO[B.weak]} ${ELNAME[B.weak]}${B.weakHit?' ◎ こうかばつぐん!':''}</p><p>${B.tmax}びょうで たおそう! ちから ${atkNow()}</p>`);
- sfx('evolve');speak(`よわてんは ${ELNAME[B.weak]}`+(B.weakHit?'。こうかばつぐん':''));await sleep(2600);m.remove();
+ const m=modal(`<h2 class="ttl" style="font-size:72px;-webkit-text-stroke-color:#b3260f">ボスが あらわれた!</h2><img src="${im('bosses',B.boss.key)}" style="width:260px" alt=""><p style="font-size:44px">${B.boss.name}</p><p style="font-size:38px;font-weight:900">じゃくてん ${ELEMO[B.weak]} ${ELNAME[B.weak]}${B.weakHit?' ◎ こうかばつぐん!':''}</p><p>${B.tmax}びょうで たおそう! ちから ${atkNow()}</p>`);
+ sfx('evolve');speak(`じゃくてんは ${ELNAME[B.weak]}`+(B.weakHit?'。こうかばつぐん':''));await sleep(2600);m.remove();
  B.quiz.card.style.visibility='';B.quiz.ans.style.visibility='';
  spawnEnemy();nextQ();hud();timerUI();B.paused--;
 }
@@ -745,6 +745,8 @@ function starCalc(){const tot=B.tot||0,acc=tot?B.okFirst/tot:0,ms=[...B.msL].sor
  const pc=Math.round(acc*100);
  const msg=n===3?'すらすら できたね! すごい!':n===2?(acc>=.9?'せいかい ばっちり! もうすこし はやく できたら ★3つ':`いっぱつ せいかい ${pc}%! もっと せいかいで ★3つ`):'クリア! もういちど やると ★が ふえるよ';
  return{n,acc,med,msg};}
+/* いちばん先の まだクリアしていない ステージ [レベル, ラウンド]。ぜんぶクリア済みなら null */
+function frontier(){const L=Math.min(26,S.unlocked),r=roundsOf(L)+1;return r<=3?[L,r]:null;}
 async function bossWin(){
  endBattle();const ec=ctr(B.E);
  shakeW(22,650);popFx('fx_common','explosion',ec.x,ec.y,480,800);popFx('fx_common','fireworks',ec.x,ec.y-40,520,1000);
@@ -757,12 +759,14 @@ async function bossWin(){
  const sr=starCalc(),skey=st+'-'+r,sold=S.star[skey]||0;let sbonus=0;for(let k=sold+1;k<=sr.n;k++)sbonus+=k===2?2:k===3?3:0;if(sr.n>sold)S.star[skey]=sr.n;
  const coins=(first?(r<3?8:20):(r<3?5:8))+sbonus+(B.awake&&B.sk.t==='coin'?B.sk.v:0);S.coins+=coins;
  const newMon=null;
+ {/* かったら、つぎにあそぶステージ(いちばん先のミクリア)を自動でえらんでおく */
+  const f=frontier();if(f){S.stage=f[0];S.round=f[1];}}
  save();
  sfx('clear');setBGM('home');
  const m=modal(`<h2 class="ttl" style="font-size:80px;margin:0;-webkit-text-stroke-color:#b34b00">クリア!</h2><div class="gres" style="margin:0"><img class="it" src="${im('bosses',B.boss.key)}" alt="" style="width:120px;height:120px;transform:rotate(-8deg)"></div><p style="font-size:32px;margin:2px 0">${B.boss.name} を たおした! ずかんに とうろく!</p><p style="font-size:32px;margin:2px 0"><img src="${im('items','coin')}" style="height:46px;vertical-align:middle" alt=""> コイン +${coins}${first?'(はじめてクリア!)':''}</p><p style="font-size:52px;line-height:1;margin:0;color:#f5a800;text-shadow:0 3px 0 #b87400">${'★'.repeat(sr.n)}<span style="color:#d8cfe8;text-shadow:none">${'★'.repeat(3-sr.n)}</span></p><p style="font-size:26px;color:#6a5a90">${sr.msg}${sbonus?` (ほしボーナス +${sbonus}コイン)`:''}</p>${B.cgCoins?`<p style="font-size:30px;color:#b87400">コインおばけから +${B.cgCoins}コイン ゲット!</p>`:''}${newMon?`<p class="new" style="font-size:40px">あたらしい なかま! ${MON[newMon].n1}</p><img src="${im('monsters',newMon+'_stage1')}" style="height:140px" alt="">`:''}<div class="btns"></div>`);
  speak('クリア! やったね');
  const bb=$('.btns',m);
- {const nL=r>=3?st+1:st,nR=r>=3?1:r+1;if(nL<=26&&nL<=S.unlocked)bb.append(btn('つぎの ステージ','green',()=>{S.stage=nL;S.round=nR;save();go('battle',{mode:S.mode,mon:S.mon,stage:nL,round:nR});}));}
+ {const f=frontier();if(f)bb.append(btn('つぎの ステージ','green',()=>{S.stage=f[0];S.round=f[1];save();go('battle',{mode:S.mode,mon:S.mon,stage:f[0],round:f[1]});}));}
  bb.append(btn('もういちど','orange',()=>go('sel')),btn('ホーム','blue',()=>go('home')));
 }
 const RAR_W={1:60,2:28,3:10,4:2},RAR_GATE={3:5,4:10}; /* スーパーレアは5体、ウルトラレアは10体 あつめてから */
