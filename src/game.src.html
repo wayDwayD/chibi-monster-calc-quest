@@ -163,6 +163,7 @@ input{-webkit-user-select:text;user-select:text;font-family:inherit;font-size:34
 .chcard{width:270px;padding:16px 10px;border-radius:28px;background:#fff;border:6px solid #ffd23f;box-shadow:0 8px 0 rgba(0,0,0,.2);display:flex;flex-direction:column;align-items:center;gap:6px;font-weight:900;font-size:30px}
 .chcard img{width:150px;height:150px;object-fit:contain}.chcard small{font-size:24px;color:#d2540a;font-weight:900}
 .chcard:active{transform:translateY(5px)}
+.mbox.evm{overflow:visible}
 .evo{position:relative;width:420px;height:420px}
 .evo img{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
 .evo .sw{width:560px;animation:spin 3s linear infinite}
@@ -730,7 +731,7 @@ function applyHint(){
  if(ws.length<2)return;const b=pick(ws);b.classList.add('dim');B.hints--;hud();
 }
 async function evolve(){
- const m=modal(`<div class="evo"><img class="sw" src="${im('fx_common','evolve_swirl')}" alt=""><img class="ch" id="evc" src="${im('monsters',B.mon+'_stage1')}" alt=""></div><h2 class="ttl" id="evt" style="font-size:56px">${MON[B.mon].n1} が ひかりはじめた…</h2>`);
+ const m=modal(`<div class="evo"><img class="sw" src="${im('fx_common','evolve_swirl')}" alt=""><img class="ch" id="evc" src="${im('monsters',B.mon+'_stage1')}" alt=""></div><h2 class="ttl" id="evt" style="font-size:56px">${MON[B.mon].n1} が ひかりはじめた…</h2>`,'evm');
  sfx('evolve');await sleep(1700);
  B.stage2=true;S.evoSeen[B.mon]=1;save();
  const c=$('#evc',m);c.src=im('monsters',B.mon+'_stage2');c.animate([{transform:'translate(-50%,-50%) scale(.3)'},{transform:'translate(-50%,-50%) scale(1.25)'},{transform:'translate(-50%,-50%) scale(1)'}],{duration:700,easing:'ease-out'});
