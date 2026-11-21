@@ -96,5 +96,46 @@
    "cg_gold",
    "cg_rainbow"
   ]
+ },
+ "boss_sheet1.webp": {
+  "as": "bosses",
+  "tag": "bosses2",
+  "spr": 300,
+  "ids": [
+   "sb01_jelly",
+   "sb02_pumpkin",
+   "sb03_cactus",
+   "sb04_puffer",
+   "sb05_yeti",
+   "sb06_thundercloud",
+   "sb07_drillmole",
+   "sb08_kraken",
+   "sb09_bigkarakasa",
+   "sb10_ironturtle",
+   "sb11_needlehog",
+   "sb12_mushqueen",
+   "sb13_moonwolf",
+   "sb14_eel",
+   "sb15_orochi",
+   "sb16_mimic",
+   "sb17_genie",
+   "sb18_scorpion",
+   "sb19_tengu",
+   "sb20_bonedragon"
+  ]
+ },
+ "boss_sheet2.webp": {
+  "as": "bosses",
+  "tag": "bosses3",
+  "spr": 300,
+  "cols": 3,
+  "ids": [
+   "sb21_icegolem",
+   "sb22_windmage",
+   "sb23_killerbee",
+   "sb24_mechawhale",
+   "sb25_redoni",
+   "sb26_darkknight"
+  ]
  }
 }

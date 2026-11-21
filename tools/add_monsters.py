@@ -38,7 +38,7 @@ def keyed_mask(a):
     return bg
 
 
-def process(sheet, ids, tag, single=False):
+def process(sheet, ids, tag, single=False, cols=4, spr=None):
     im = Image.open(p('assets', 'source', sheet)).convert('RGB')
     a = np.asarray(im)
     bg = keyed_mask(a)
@@ -59,7 +59,7 @@ def process(sheet, ids, tag, single=False):
         ys = ys + objs[i - 1][0].start; xs = xs + objs[i - 1][1].start
         rec = dict(id=i, ys=ys, xs=xs, cy=ys.mean(), cx=xs.mean())
         (cores if ar >= 3000 else smalls).append(rec)
-    rows = -(-len(ids) // 4) if single else len(ids) // 2   # 1行に4つ(なかまは 進化前/後 x2種類、敵は1体x4)
+    rows = -(-len(ids) // cols) if single else len(ids) // 2   # 1行に4つ(なかまは 進化前/後 x2種類、敵は1体x4)
 
     def kmeans1d(v, k):                              # 1次元k-means(行・列の中心を求める)
         v = np.array(v); c = np.quantile(v, (np.arange(k) + .5) / k)
@@ -87,7 +87,7 @@ def process(sheet, ids, tag, single=False):
                 if DEBUG: print('  split merged blob at y=', cut)
                 break
     rcen = kmeans1d([c['cy'] for c in cores], rows)
-    ccen = kmeans1d([c['cx'] for c in cores], 4)
+    ccen = kmeans1d([c['cx'] for c in cores], cols if single else 4)
     if DEBUG: print('  rcen', rcen.round(), 'ccen', ccen.round())
     cell = {}
     def assign(rec):
@@ -107,9 +107,9 @@ def process(sheet, ids, tag, single=False):
     for rec in cores + smalls:
         m = masks.setdefault(rec['cell'], np.zeros(fg.shape, bool))
         m[rec['ys'], rec['xs']] = True
-    missing = [(r, c) for r in range(rows) for c in range(4) if (r, c) not in masks]
+    missing = [(r, c) for r in range(rows) for c in range(cols if single else 4) if (r, c) not in masks]
     if missing: print(f'  !! {sheet}: 空のマス {missing}')
-    ordered = [(None, None, None, masks.get((r, c))) for r in range(rows) for c in range(4)]
+    ordered = [(None, None, None, masks.get((r, c))) for r in range(rows) for c in range(cols if single else 4)]
     sprites = {}
     for k, c in enumerate(ordered):
         if single:
@@ -136,7 +136,7 @@ def process(sheet, ids, tag, single=False):
         rgb[..., 0] -= sp; rgb[..., 2] -= sp
         rgba = np.dstack([np.clip(rgb, 0, 255).astype(np.uint8), (al * 255).astype(np.uint8)])
         s = Image.fromarray(rgba, 'RGBA')
-        sc = SPR / max(s.size)
+        sc = (spr or SPR) / max(s.size)
         sprites[name] = s.resize((max(1, round(s.width * sc)), max(1, round(s.height * sc))), Image.LANCZOS)
     # 棚詰め(幅1536)
     W, GAP = 1536, 2
@@ -164,7 +164,7 @@ def main():
         if not os.path.exists(p('assets', 'source', sheet)):
             print('skip (no source):', sheet); continue
         if isinstance(ids, dict):                      # 敵などの単体シート: {"as":"enemies","tag":"enemies2","ids":[...]}
-            tag = ids['tag']; rects = process(sheet, ids['ids'], tag, single=True); kind = ids['as']
+            tag = ids['tag']; rects = process(sheet, ids['ids'], tag, single=True, cols=ids.get('cols', 4), spr=ids.get('spr')); kind = ids['as']
         else:                                          # なかま(進化前/後)シート
             tag = f'mons{n}'; rects = process(sheet, ids, tag); kind = 'monsters'
         aj[tag] = {'f': f'atlas/{tag}.png', 'as': kind, 'r': rects}
