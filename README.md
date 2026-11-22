@@ -38,6 +38,7 @@ python3 tools/build.py   # src/ と assets/ から index.html を生成
 - `src/game.src.html` ゲーム本体(HTML/CSS/JS)
 - `src/atlas.json` 画像シートの切り出し座標
 - `assets/` 画像(WebP)・背景・効果音・BGM
+- **画像を軽くする道具**: `tools/encode_webp.js`(node+sharp)でアトラスを書き出します(`cd tools && npm install` で入ります。入っていなければ自動でPILで保存)。`tools/recompress_old.py` は元絵のない古いアトラス用で、1回だけ実行ずみです
 - `assets/source/monsters2_sheet.png` 追加モンスター8体の元絵(市松背景用)。`python3 tools/add_monsters2.py` で背景を抜いて `assets/atlas/monsters2.webp` を作ります
 - **モンスターの追加(140体ぶん)**: ChatGPTで作った「マゼンタ背景・横4×縦5(各行: 進化前A/進化後A/進化前B/進化後B)」のシートを `assets/source/mon_sheetN.webp` に置き、`tools/sheets.json` に id の並びを書いて(2枚目以降のテーマ別シートは `{"as":"monsters","tag":"mons7","pairs":true,"q":80,"spr":240,"ids":[10個]}` の形) `python3 tools/add_monsters.py`(背景ぬき・切り出し・`assets/atlas/monsN.webp` と `src/atlas.json` を更新。敵のシート(横4×縦5の単体20体)は `sheets.json` に `{"as":"enemies","tag":"enemies2","ids":[...]}` で書く。numpy / scipy / Pillow が必要)。名前・属性(`fx`)・レア度(`r`)・とくぎ(`sk`)・ちから(`base`)・進化倍率(`evo`)・ひとこと(`tip`)は `src/monsters_extra.json` に書き、`python3 tools/build.py` で取り込みます(足りない項目や絵があると build が止まります)。詳しくは `docs/CONTENT_GUIDE.md`
 
