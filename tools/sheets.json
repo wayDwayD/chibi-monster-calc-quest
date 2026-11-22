@@ -137,5 +137,157 @@
    "sb25_redoni",
    "sb26_darkknight"
   ]
+ },
+ "mon_sheet7.webp": {
+  "as": "monsters",
+  "tag": "mons7",
+  "pairs": true,
+  "q": 80,
+  "spr": 240,
+  "ids": [
+   "blockking",
+   "drum",
+   "piano",
+   "trumpet",
+   "xylo",
+   "windlion",
+   "kite",
+   "yoyo",
+   "musicbox",
+   "sparkler"
+  ]
+ },
+ "mon_sheet8.webp": {
+  "as": "monsters",
+  "tag": "mons8",
+  "pairs": true,
+  "q": 80,
+  "spr": 240,
+  "ids": [
+   "firetruck",
+   "train",
+   "patrol",
+   "sub",
+   "yacht",
+   "plane",
+   "shovel",
+   "balloon",
+   "snowmobile",
+   "bullet"
+  ]
+ },
+ "mon_sheet9.webp": {
+  "as": "monsters",
+  "tag": "mons9",
+  "pairs": true,
+  "q": 80,
+  "spr": 240,
+  "ids": [
+   "rocket",
+   "ufo",
+   "comet",
+   "saturn",
+   "sunsun",
+   "starko",
+   "thundercloud",
+   "rainbow",
+   "aurora",
+   "milky"
+  ]
+ },
+ "mon_sheet10.webp": {
+  "as": "monsters",
+  "tag": "mons10",
+  "pairs": true,
+  "q": 80,
+  "spr": 240,
+  "ids": [
+   "sunflower",
+   "tulip",
+   "strawberry",
+   "sakura",
+   "tomato",
+   "carrot",
+   "lotus",
+   "cactus",
+   "worldtree",
+   "flowerprincess"
+  ]
+ },
+ "mon_sheet11.webp": {
+  "as": "monsters",
+  "tag": "mons11",
+  "pairs": true,
+  "q": 80,
+  "spr": 240,
+  "ids": [
+   "pencil",
+   "scissors",
+   "crayon",
+   "eraser",
+   "glue",
+   "clock",
+   "randoseru",
+   "toast",
+   "umbrella",
+   "bank"
+  ]
+ },
+ "mon_sheet12.webp": {
+  "as": "monsters",
+  "tag": "mons12",
+  "pairs": true,
+  "q": 80,
+  "spr": 240,
+  "ids": [
+   "zero",
+   "one",
+   "seven",
+   "circle",
+   "triangle",
+   "square",
+   "heart",
+   "abacus",
+   "hiragana",
+   "infinity"
+  ]
+ },
+ "mon_sheet13.webp": {
+  "as": "monsters",
+  "tag": "mons13",
+  "pairs": true,
+  "q": 80,
+  "spr": 240,
+  "ids": [
+   "kappa",
+   "yukionna",
+   "tanuki",
+   "kitsune",
+   "magichat",
+   "plasma",
+   "broom",
+   "potion",
+   "kodama",
+   "daidara"
+  ]
+ },
+ "mon_sheet14.webp": {
+  "as": "monsters",
+  "tag": "mons14",
+  "pairs": true,
+  "q": 80,
+  "spr": 240,
+  "ids": [
+   "tricera",
+   "brachio",
+   "trex",
+   "ptera",
+   "ammon",
+   "stego",
+   "greendragon",
+   "earthdragon",
+   "snowdragon",
+   "icedragon"
+  ]
  }
 }

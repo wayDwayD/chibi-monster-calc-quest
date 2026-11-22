@@ -38,7 +38,7 @@ def keyed_mask(a):
     return bg
 
 
-def process(sheet, ids, tag, single=False, cols=4, spr=None):
+def process(sheet, ids, tag, single=False, cols=4, spr=None, quality=86):
     im = Image.open(p('assets', 'source', sheet)).convert('RGB')
     a = np.asarray(im)
     bg = keyed_mask(a)
@@ -148,7 +148,7 @@ def process(sheet, ids, tag, single=False, cols=4, spr=None):
     sheet_im = Image.new('RGBA', (W, H), (0, 0, 0, 0))
     for nm, s in sprites.items(): sheet_im.alpha_composite(s, place[nm])
     out = p('assets', 'atlas', f'{tag}.webp')
-    sheet_im.save(out, quality=86, alpha_quality=96, method=6)
+    sheet_im.save(out, quality=quality, alpha_quality=96, method=6)
     rects = {nm: [place[nm][0], place[nm][1], s.width, s.height] for nm, s in sprites.items()}
     if DEBUG:
         dbg = Image.new('RGB', (W, H), (60, 60, 70)); dbg.paste(sheet_im, (0, 0), sheet_im)
@@ -163,7 +163,9 @@ def main():
     for n, (sheet, ids) in enumerate(cfg.items(), 1):
         if not os.path.exists(p('assets', 'source', sheet)):
             print('skip (no source):', sheet); continue
-        if isinstance(ids, dict):                      # 敵などの単体シート: {"as":"enemies","tag":"enemies2","ids":[...]}
+        if isinstance(ids, dict) and ids.get('pairs'):  # なかま(進化前/後)シートの新しい書き方: {"as":"monsters","tag":"mons10","pairs":true,"q":78,"spr":230,"ids":[...10個...]}
+            tag = ids['tag']; rects = process(sheet, ids['ids'], tag, spr=ids.get('spr'), quality=ids.get('q', 86)); kind = ids['as']
+        elif isinstance(ids, dict):                      # 敵などの単体シート: {"as":"enemies","tag":"enemies2","ids":[...]}
             tag = ids['tag']; rects = process(sheet, ids['ids'], tag, single=True, cols=ids.get('cols', 4), spr=ids.get('spr')); kind = ids['as']
         else:                                          # なかま(進化前/後)シート
             tag = f'mons{n}'; rects = process(sheet, ids, tag); kind = 'monsters'
